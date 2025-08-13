@@ -118,7 +118,7 @@ try {
             'summary' => [
                 'total_products_sold' => $totalProductsSold,
                 'total_revenue' => round($totalRevenue, 2),
-                'average_order_value' => $totalOrders > 0 ? round($totalRevenue / $result['total_orders'], 2) : 0
+                'average_order_value' => $result['total_orders'] > 0 ? round($totalRevenue / $result['total_orders'], 2) : 0
             ],
             'category_statistics' => $categoryStats
         ]
