@@ -8,6 +8,11 @@ ServerSignature Off
     Deny from all
 </Files>
 
+# Правильная обработка PHP файлов
+<FilesMatch "\.(php)$">
+    SetHandler application/x-httpd-php
+</FilesMatch>
+
 # Кэширование статических файлов
 <IfModule mod_expires.c>
     ExpiresActive On
@@ -16,6 +21,7 @@ ServerSignature Off
     ExpiresByType image/png "access plus 1 month"
     ExpiresByType image/jpg "access plus 1 month"
     ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType application/json "access plus 0 seconds"
 </IfModule>
 
 # Сжатие файлов
@@ -29,4 +35,5 @@ ServerSignature Off
     AddOutputFilterByType DEFLATE application/rss+xml
     AddOutputFilterByType DEFLATE application/javascript
     AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/json
 </IfModule>
