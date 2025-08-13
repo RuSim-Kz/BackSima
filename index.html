@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система управления заказами</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .control-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            color: #495057;
+            min-width: 200px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .status.running {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.completed {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stats-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .stats-card h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .stats-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stats-label {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .category-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .category-item:last-child {
+            border-bottom: none;
+        }
+
+        .category-name {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .category-stats {
+            text-align: right;
+        }
+
+        .category-quantity {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .category-revenue {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .input-group label {
+                min-width: auto;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Система управления заказами</h1>
+            <p>Мониторинг и анализ данных в реальном времени</p>
+        </div>
+
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="input-group">
+                    <label for="iterations">Количество повторов (N):</label>
+                    <input type="number" id="iterations" value="1000" min="1" max="10000">
+                </div>
+                
+                <button class="btn" id="startBtn" onclick="startBetaScript()">
+                    🚀 Запустить Beta скрипт
+                </button>
+                
+                <div id="status" class="status" style="display: none;"></div>
+                
+                <div class="progress-bar" id="progressBar" style="display: none;">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <div class="stats-container">
+                <div class="stats-card">
+                    <h3>📊 Общая статистика</h3>
+                    <div class="stats-value" id="totalOrders">-</div>
+                    <div class="stats-label">Всего заказов</div>
+                    
+                    <div class="stats-value" id="totalProducts" style="font-size: 1.5em; margin-top: 15px;">-</div>
+                    <div class="stats-label">Товаров продано</div>
+                    
+                    <div class="stats-value" id="totalRevenue" style="font-size: 1.5em; margin-top: 15px;">-</div>
+                    <div class="stats-label">Общая выручка (₽)</div>
+                </div>
+
+                <div class="stats-card">
+                    <h3>⏱️ Временной период</h3>
+                    <div class="stats-value" id="timeDuration">-</div>
+                    <div class="stats-label">Длительность периода</div>
+                    
+                    <div class="stats-value" id="avgOrderValue" style="font-size: 1.5em; margin-top: 15px;">-</div>
+                    <div class="stats-label">Средний чек (₽)</div>
+                    
+                    <div class="stats-value" id="executionTime" style="font-size: 1.5em; margin-top: 15px;">-</div>
+                    <div class="stats-label">Время выполнения (мс)</div>
+                </div>
+
+                <div class="stats-card">
+                    <h3>📈 Статистика по категориям</h3>
+                    <div class="category-list" id="categoryList">
+                        <div style="text-align: center; color: #6c757d; padding: 20px;">
+                            Данные загружаются...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let updateInterval;
+        let isRunning = false;
+
+        async function startBetaScript() {
+            if (isRunning) return;
+
+            const iterations = document.getElementById('iterations').value;
+            const startBtn = document.getElementById('startBtn');
+            const status = document.getElementById('status');
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+
+            if (!iterations || iterations < 1 || iterations > 10000) {
+                alert('Пожалуйста, введите корректное количество повторов (1-10000)');
+                return;
+            }
+
+            isRunning = true;
+            startBtn.disabled = true;
+            startBtn.innerHTML = '<span class="loading"></span>Выполняется...';
+            
+            status.style.display = 'block';
+            status.className = 'status running';
+            status.innerHTML = '🚀 Запуск Beta скрипта...';
+            
+            progressBar.style.display = 'block';
+            progressFill.style.width = '0%';
+
+            try {
+                // Запускаем Beta скрипт
+                const betaResponse = await fetch(`beta.php?n=${iterations}`);
+                const betaData = await betaResponse.json();
+
+                if (betaData.status === 'completed') {
+                    status.className = 'status completed';
+                    status.innerHTML = `✅ Beta скрипт завершен! Успешно: ${betaData.success_count}, Ошибок: ${betaData.error_count}, Время: ${betaData.execution_time_seconds}с`;
+                    progressFill.style.width = '100%';
+                } else {
+                    throw new Error(betaData.message || 'Ошибка выполнения Beta скрипта');
+                }
+
+                // Запускаем обновление статистики
+                startStatsUpdate();
+
+            } catch (error) {
+                status.className = 'status error';
+                status.innerHTML = `❌ Ошибка: ${error.message}`;
+                console.error('Error:', error);
+            } finally {
+                isRunning = false;
+                startBtn.disabled = false;
+                startBtn.innerHTML = '🚀 Запустить Beta скрипт';
+            }
+        }
+
+        async function updateStats() {
+            try {
+                const response = await fetch('gamma.php');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    updateStatsDisplay(data.data);
+                } else {
+                    console.error('Gamma script error:', data.message);
+                }
+            } catch (error) {
+                console.error('Error updating stats:', error);
+            }
+        }
+
+        function updateStatsDisplay(data) {
+            // Обновляем общую статистику
+            document.getElementById('totalOrders').textContent = data.total_orders_analyzed;
+            document.getElementById('totalProducts').textContent = data.summary.total_products_sold;
+            document.getElementById('totalRevenue').textContent = data.summary.total_revenue.toLocaleString('ru-RU');
+
+            // Обновляем временной период
+            document.getElementById('timeDuration').textContent = data.time_period.duration;
+            document.getElementById('avgOrderValue').textContent = data.summary.average_order_value.toLocaleString('ru-RU');
+            document.getElementById('executionTime').textContent = data.execution_time_ms;
+
+            // Обновляем статистику по категориям
+            const categoryList = document.getElementById('categoryList');
+            if (data.category_statistics && data.category_statistics.length > 0) {
+                categoryList.innerHTML = data.category_statistics.map(cat => `
+                    <div class="category-item">
+                        <div class="category-name">${cat.category_name}</div>
+                        <div class="category-stats">
+                            <div class="category-quantity">${cat.products_sold} шт.</div>
+                            <div class="category-revenue">${cat.total_revenue.toLocaleString('ru-RU')} ₽</div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                categoryList.innerHTML = '<div style="text-align: center; color: #6c757d; padding: 20px;">Нет данных</div>';
+            }
+        }
+
+        function startStatsUpdate() {
+            // Останавливаем предыдущий интервал
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+
+            // Обновляем статистику сразу
+            updateStats();
+
+            // Запускаем обновление каждую секунду
+            updateInterval = setInterval(updateStats, 1000);
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+            startStatsUpdate();
+        });
+    </script>
+</body>
+</html>
