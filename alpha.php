@@ -66,10 +66,15 @@ try {
             // Изменяем тип поля id на BIGINT
             $pdo->exec("ALTER TABLE orders ALTER COLUMN id TYPE BIGINT");
             
+            // Удаляем старую последовательность
+            $pdo->exec("DROP SEQUENCE IF EXISTS orders_id_seq");
+            
             // Создаем новую последовательность
             $maxId = $pdo->query("SELECT MAX(id) FROM orders")->fetchColumn();
-            $pdo->exec("CREATE SEQUENCE IF NOT EXISTS orders_id_seq_new START WITH " . ($maxId + 1));
-            $pdo->exec("ALTER TABLE orders ALTER COLUMN id SET DEFAULT nextval('orders_id_seq_new')");
+            $nextId = $maxId + 1;
+            $pdo->exec("CREATE SEQUENCE orders_id_seq START WITH $nextId");
+            $pdo->exec("ALTER TABLE orders ALTER COLUMN id SET DEFAULT nextval('orders_id_seq')");
+            $pdo->exec("SELECT setval('orders_id_seq', $nextId, false)");
             
             // Повторяем вставку
             $stmt->execute([$product['id'], $quantity, $totalPrice, $customerEmail]);
