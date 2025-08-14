@@ -342,14 +342,34 @@
 
             try {
                 // Запускаем Beta скрипт
+                console.log('📡 Отправка запроса к beta.php с параметрами:', { iterations });
                 const betaResponse = await fetch(`beta.php?n=${iterations}`);
-                const betaData = await betaResponse.json();
+                console.log('📥 Получен ответ от beta.php:', { 
+                    status: betaResponse.status, 
+                    statusText: betaResponse.statusText,
+                    url: betaResponse.url 
+                });
+                
+                const responseText = await betaResponse.text();
+                console.log('📄 Сырой ответ от beta.php:', responseText);
+                
+                let betaData;
+                try {
+                    betaData = JSON.parse(responseText);
+                    console.log('✅ JSON от beta.php успешно распарсен:', betaData);
+                } catch (parseError) {
+                    console.error('❌ Ошибка парсинга JSON от beta.php:', parseError);
+                    console.error('📄 Проблемный текст:', responseText);
+                    throw new Error('Неверный формат ответа от beta.php');
+                }
 
                 if (betaData.status === 'completed') {
                     status.className = 'status completed';
                     status.innerHTML = `✅ Beta скрипт завершен! Успешно: ${betaData.success_count}, Ошибок: ${betaData.error_count}, Время: ${betaData.execution_time_seconds}с`;
                     progressFill.style.width = '100%';
+                    console.log('🎉 Beta скрипт выполнен успешно:', betaData);
                 } else {
+                    console.error('❌ Beta скрипт вернул ошибку:', betaData);
                     throw new Error(betaData.message || 'Ошибка выполнения Beta скрипта');
                 }
 
@@ -357,9 +377,9 @@
                 startStatsUpdate();
 
             } catch (error) {
+                console.error('💥 Критическая ошибка в startBetaScript:', error);
                 status.className = 'status error';
                 status.innerHTML = `❌ Ошибка: ${error.message}`;
-                console.error('Error:', error);
             } finally {
                 isRunning = false;
                 startBtn.disabled = false;
@@ -369,16 +389,33 @@
 
         async function updateStats() {
             try {
+                console.log('📡 Отправка запроса к gamma.php...');
                 const response = await fetch('gamma.php');
-                const data = await response.json();
+                console.log('📥 Получен ответ от gamma.php:', { 
+                    status: response.status, 
+                    statusText: response.statusText 
+                });
+                
+                const responseText = await response.text();
+                console.log('📄 Сырой ответ от gamma.php:', responseText);
+                
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                    console.log('✅ JSON от gamma.php успешно распарсен:', data);
+                } catch (parseError) {
+                    console.error('❌ Ошибка парсинга JSON от gamma.php:', parseError);
+                    console.error('📄 Проблемный текст:', responseText);
+                    return;
+                }
 
                 if (data.status === 'success') {
                     updateStatsDisplay(data.data);
                 } else {
-                    console.error('Gamma script error:', data.message);
+                    console.error('❌ Gamma script error:', data.message);
                 }
             } catch (error) {
-                console.error('Error updating stats:', error);
+                console.error('💥 Ошибка обновления статистики:', error);
             }
         }
 
