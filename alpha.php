@@ -49,6 +49,13 @@ try {
     
     // Создаем заказ с обработкой переполнения ID
     try {
+        // Логируем состояние перед вставкой
+        $maxId = $pdo->query("SELECT MAX(id) FROM orders")->fetchColumn();
+        $stmt = $pdo->query("SELECT last_value, is_called FROM orders_id_seq");
+        $seqInfo = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        error_log("ALPHA DEBUG: Max ID = $maxId, Sequence last_value = " . $seqInfo['last_value'] . ", is_called = " . $seqInfo['is_called']);
+        
         $stmt = $pdo->prepare("
             INSERT INTO orders (product_id, quantity, total_price, customer_email, purchase_time) 
             VALUES (?, ?, ?, ?, NOW())
@@ -58,9 +65,12 @@ try {
         $stmt->execute([$product['id'], $quantity, $totalPrice, $customerEmail]);
         
         $orderId = $pdo->lastInsertId();
+        error_log("ALPHA DEBUG: Order created successfully with ID = $orderId");
     } catch (Exception $e) {
+        error_log("ALPHA DEBUG: Exception caught: " . $e->getMessage());
         // Если произошло переполнение ID, автоматически исправляем
         if (strpos($e->getMessage(), 'integer out of range') !== false) {
+            error_log("ALPHA DEBUG: Integer overflow detected, starting auto-fix");
             logMessage("Auto-fixing ID overflow in orders table");
             
             // Изменяем тип поля id на BIGINT
