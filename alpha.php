@@ -18,8 +18,11 @@ $lockKey = 'alpha_script_lock';
 $lockValue = uniqid();
 
 try {
-    // Попытка установить блокировку
-    $lockAcquired = $redis->set($lockKey, $lockValue, ['NX', 'EX' => LOCK_TIMEOUT]);
+    // Пауза для демонстрации эффекта
+    sleep(1);
+    
+    // Попытка установить блокировку только для критической секции
+    $lockAcquired = $redis->set($lockKey, $lockValue, ['NX', 'EX' => 2]);
     
     if (!$lockAcquired) {
         echo json_encode([
@@ -31,9 +34,6 @@ try {
     }
     
     logMessage("Alpha script started - Lock acquired");
-    
-    // Пауза для демонстрации эффекта
-    sleep(1);
     
     // Получаем случайный продукт
     $stmt = $pdo->query("SELECT id, name, price FROM products ORDER BY RANDOM() LIMIT 1");
