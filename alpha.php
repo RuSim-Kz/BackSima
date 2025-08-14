@@ -66,6 +66,9 @@ try {
             // Изменяем тип поля id на BIGINT
             $pdo->exec("ALTER TABLE orders ALTER COLUMN id TYPE BIGINT");
             
+            // Сначала отвязываем последовательность от поля
+            $pdo->exec("ALTER TABLE orders ALTER COLUMN id DROP DEFAULT");
+            
             // Удаляем старую последовательность
             $pdo->exec("DROP SEQUENCE IF EXISTS orders_id_seq");
             
