@@ -12,7 +12,7 @@ define('REDIS_PORT', 6379);
 define('REDIS_PASSWORD', null);
 
 // Настройки приложения
-define('LOCK_TIMEOUT', 60); // Время блокировки в секундах
+define('LOCK_TIMEOUT', 5); // Время блокировки в секундах
 define('DEFAULT_ITERATIONS', 1000); // Количество итераций по умолчанию
 
 // Функция для подключения к PostgreSQL
